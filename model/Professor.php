@@ -2,16 +2,34 @@
 require_once("Nome.php");
 require_once("Texto.php");
 require_once("IProfessor.php");
-class Professor extends Nome implements IProfessor
+class Professor extends Nome implements IProfessor,JsonSerializable
 {
     private string $disciplina;
-    private int $siap;
+    private int $siape;
     private string $gmail;
+    public static function criarProfessor(array $recolherdados)
+    {
+        $professor = new Professor();
+        $professor->setNome($recolherdados['nome']);
+        $professor->setDisciplina($recolherdados['disciplina']);
+        $professor->setSiape($recolherdados['siape']);
+        $professor->setGmail($recolherdados['gmail']);
+        return $professor;
+    }
+    public function jsonSerialize(): mixed
+    {
+        return $professor = [
+            "nome" => $this->getNome(),
+            "siape" => $this->getSiape(),
+            "disciplina" => $this->getDisciplina(),
+            "gmail" => $this->getGmail()
+        ];
+    }
     public function __toString()
     {
         $itens = ["Nome","Disciplina","Siap","Email"];
         $m = Texto::contagem($itens);
-        return Texto::alinhar_topicos("Nome",$m,": ").$this->nome."\n".Texto::alinhar_topicos("Disciplina",$m,": ").$this->disciplina."\n".Texto::alinhar_topicos("Siap",$m,": ").$this->siap."\n".Texto::alinhar_topicos("Email",$m,": ").$this->gmail."\n";
+        return Texto::alinhar_topicos("Nome",$m,": ").$this->nome."\n".Texto::alinhar_topicos("Disciplina",$m,": ").$this->disciplina."\n".Texto::alinhar_topicos("Siape",$m,": ").$this->siape."\n".Texto::alinhar_topicos("Email",$m,": ").$this->gmail."\n";
     }
     
     public function getHorarioAtendimento()
@@ -40,17 +58,17 @@ class Professor extends Nome implements IProfessor
     /**
      * Get the value of siap
      */
-    public function getSiap(): int
+    public function getSiape(): int
     {
-        return $this->siap;
+        return $this->siape;
     }
 
     /**
      * Set the value of siap
      */
-    public function setSiap(int $siap): self
+    public function setSiape(int $siape): self
     {
-        $this->siap = $siap;
+        $this->siape = $siape;
 
         return $this;
     }
