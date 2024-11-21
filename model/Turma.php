@@ -3,7 +3,7 @@ require_once("Nome.php");
 require_once("Professor.php");
 require_once("Aluno.php");
 require_once("Texto.php");
-class Turma extends Nome
+class Turma extends Nome implements JsonSerializable
 {
     private Professor $responsavel;
     private array $alunos;
@@ -12,6 +12,15 @@ class Turma extends Nome
     public function __construct()
     {
         $this->diasChamada = array();
+    }
+    public function jsonSerialize(): mixed
+    {
+        return $professor = [
+            "nome" => $this->getNome(),
+            "responsavel" => $this->getResponsavel(),
+            "alunos" => $this->getAlunos(),
+            "diasChamada" => $this->getDiasChamada()
+        ];
     }
     public function converter() :string
     {
