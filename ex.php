@@ -3,7 +3,6 @@ require_once("model/Turma.php");
 require_once("model/Professor.php");
 require_once("model/Aluno.php");
 require_once("model/Texto.php");
-$tumas = array();
 function menu()
 {
     global $turmas;
@@ -22,7 +21,7 @@ function menu()
         break;
         case 3:
             chamada();
-        break;
+            break;
         case 4:
             mostrar_chamada();
         break;
@@ -38,13 +37,18 @@ function menu()
         break;
         case 8:
             system("clear");
+            if (!file_exists(__DIR__.'/data')) {
+                mkdir(__DIR__.'/data', 0777, true);
+            }
+            $turmas = json_encode($turmas,JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            file_put_contents(__DIR__."/data/turmas.json",$turmas);
             die;
         break;
         default:
             menu();
         break;
-        
-        
+            
+                        
     }   
 }
 function cadastrar_turma()
@@ -84,13 +88,13 @@ function cadastrar_turma()
                     system("clear");
                     $nomep = readline("Nome do professor responsável pela turma: ");
                     $gmailp = readline("Email do professor responsável pela turma: ");
-                    $siap = readline("Siap do professor responsável pela turma: ");
+                    $siape = readline("Siape do professor responsável pela turma: ");
                     $disciplina = readline("Disciplina do professor responsável pela turma: ");
-                }while($nomep == "" || $gmailp == "" || $siap == "");
+                }while($nomep == "" || $gmailp == "" || $siape == "");
                 $professor = new Professor();
                 $professor->setNome($nomep);
                 $professor->setGmail($gmailp);
-                $professor->setSiap($siap);
+                $professor->setSiape($siape);
                 $professor->setDisciplina($disciplina);
                 do
                 {
@@ -124,6 +128,7 @@ function abrir()
         menu();
     }
     $itens = array();
+    print "| Abrir turma selecionada |\n";
     for($i = 0 ; $i < count($turmas);$i++)
     {
         $itens[] = $turmas[$i]->getNome(); 
@@ -164,7 +169,7 @@ function chamada()
         readline("");
         menu();
     }
-    print "Fazer chamda de hoje\n\n";
+    print "| Fazer chamada turma selecionada |\n";
     $itens = array();
     $voltar = array();
     for($i = 0 ; $i < count($turmas);$i++)
@@ -268,12 +273,12 @@ function chamada()
         }
         else
         {
-            abrir();
+            chamada();
         }
     }
     else
     {
-        abrir();
+        chamada();
     }
 }
 function mostrar_chamada()
@@ -286,7 +291,7 @@ function mostrar_chamada()
         readline("");
         menu();
     }
-    print "Mostrar chamada\n\n";
+    print "| Mostrar chamada |\n\n";
     $itens = array();
     for($i = 0 ; $i < count($turmas);$i++)
     {
@@ -309,7 +314,7 @@ function mostrar_chamada()
                 mostrar_chamada();
             }
             $dias[] = "Finalizar";
-            print $turmas[$esc]->getNome()."\n";
+            print "| Dias que foram feitos a chamada da turma: ".$turmas[$esc]->getNome()." |\n";
             Texto::montar_tabela($dias);
             $escolha = readline("Escolha: ");
             if(is_numeric($escolha))
@@ -335,13 +340,13 @@ function mostrar_chamada()
                     }
                     $m = Texto::contagem($nomes);
                     system("clear");
-                    print $turmas[$esc]->getNome()."\n";
-                    print "Data: ".$dia."\n\n\n";
+                    print "| Chamada da turma: ".$turmas[$esc]->getNome()." | Dia: ".$dia." |\n\n";
+                    print "Nome : Presença\n\n";
                     for($i = 0 ; $i < count($nomes);$i++)
                     {
                         print Texto::alinhar_topicos($nomes[$i],$m,": ").$presenca[$i]."\n";
                     }
-                    print "\n\n\n";
+                    print "\n";
                     readline("Aperte enter para voltar!");
                     mostrar_chamada();
                 }
@@ -375,7 +380,7 @@ function editar()
         readline("");
         menu();
     }
-    print "Editar\n\n";
+    print "| Selecionar turma para editar |\n";
     $itens = array();
     for($i = 0 ; $i < count($turmas);$i++)
     {
@@ -410,6 +415,7 @@ function escolha_editar(int $posicao_turmas)
 {
     global $turmas;
     system("clear");
+    print "| Edição da turma: |\n".$turmas[$posicao_turmas];
     $itens = array("Editar nome de aluno","Adicionar aluno","Remover aluno","Finalizar");
     Texto::montar_tabela($itens);
     $esc = readline("Escolha: ");
@@ -456,8 +462,8 @@ function escolha_editar(int $posicao_turmas)
             {
                 escolha_editar($posicao_turmas);
             }
-            break;
-            case 2:
+        break;
+        case 2:
             system("clear");
             $alunos = $turmas[$posicao_turmas]->getAlunos();
             $nome = readline("Nome do aluno: ");
@@ -539,6 +545,7 @@ function excluir_turma()
         menu();
     }
     $itens = array();
+    print "| Excluir turma selecionada |\n";
     for($i = 0 ; $i < count($turmas);$i++)
     {
         $itens[] = $turmas[$i]->getNome(); 
@@ -554,6 +561,7 @@ function excluir_turma()
             $esc--;
             unset($turmas[$esc]);
             $turmas = array_values($turmas);
+            menu();
         }    
         else if($esc == count($turmas)+1)
         {
@@ -579,6 +587,7 @@ function atendimento()
         readline("");
         menu();
     }
+    print "| Adimento da turma |\n";
     $itens = array();
     for($i = 0 ; $i < count($turmas);$i++)
     {
@@ -609,6 +618,27 @@ function atendimento()
     else
     {
         atendimento();
+    }
+}
+$pegarturmas = json_decode(file_get_contents(__DIR__."/data/turmas.json"),true);
+if($pegarturmas == null)
+{
+    $tumas = array();
+}
+else
+{
+    $turmas = array();
+    for($i = 0 ; $i < count($pegarturmas);$i++)
+    {
+        $alunos = $pegarturmas[$i]["alunos"];
+        $responsavel = $pegarturmas[$i]["responsavel"];
+        $alunos = Aluno::criarAlunos($alunos);
+        $responsavel = Professor::criarProfessor($responsavel);
+        $turmas[$i] = new Turma();
+        $turmas[$i]->setNome($pegarturmas[$i]["nome"]);
+        $turmas[$i]->setAlunos($alunos);
+        $turmas[$i]->setResponsavel($responsavel);
+        $turmas[$i]->setDiasChamada($pegarturmas[$i]["diasChamada"]);
     }
 }
 menu();
